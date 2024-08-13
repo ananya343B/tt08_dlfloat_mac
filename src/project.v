@@ -2,9 +2,8 @@
  * Copyright (c) 2024 Your Name
  * SPDX-License-Identifier: Apache-2.0
  */
-
+// Code your design here
 `default_nettype none
-
 module tt_um_dlfloatmac (
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
@@ -20,23 +19,20 @@ wire [15:0]data_in;
 wire [15:0] c;
 wire [15:0]wa,wb;
 wire write_en;
-
+wire [7:0] c_byte;
 
 assign uio_oe = write_en?8'b11111111:8'b00000000;
-
+assign uio_out = 8'b0;
 
 assign data_in = {uio_in,ui_in};
 
 
 reg_wrapper wrap(clk,rst_n,data_in,wa,wb,write_en);
 dlfloat_mac MAC(clk,rst_n,wa,wb,c);
-
-
-assign uio_out = c[15:8];
-assign uo_out = c[7:0];
-  // All output pins must be assigned. If not used, assign to 0.
-  //assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
-  
+  output_wrapper byte_out(clk,rst_n,c,c_byte);
+//assign uio_out = c[15:8];
+assign uo_out = c_byte;
+   
 endmodule
 
 module reg_wrapper(
@@ -79,27 +75,41 @@ end
 
 endmodule
 
-module dlfloat_mac(clk,rst_n,a,b,c_out);
+module output_wrapper(input clk,
+                      input rst_n,
+                      input [15:0] c,
+                      output reg [7:0] c_byte);
+                      
+  reg state;
+  
+ always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        state <= 1'b0; 
+        c_byte<=7'b0;
+       
+    end
+    else begin
+        case (state)
+            1'b0: begin//msb
+              c_byte<=c[15:8];
+                state <= 1'b1;
+            end
+            1'b1: begin//lsb
+              c_byte<=c[7:0];
+                state <= 1'b0;
+            end
+            default: state <= 1'b0; 
+        endcase
+    end
+ end
+endmodule
+
+ module dlfloat_mac(clk,rst_n,a,b,c_out);
     input [15:0]a,b;
     input clk,rst_n;
   output reg [15:0]c_out;
-    reg [15:0]data_a,data_b;
   wire [15:0]fprod,fadd;
   
-    always @(posedge clk)
-    begin 
-    if(!rst_n)
-    begin
-	data_a <= 16'b0;
-	data_b <= 16'b0;
-	
-    end 
-    else 
-    begin 
-   data_a <= a;
-   data_b <= b;
-    end 
-    end
   always @(posedge clk) begin
     if(!rst_n) begin
       c_out<=0;
@@ -108,10 +118,8 @@ module dlfloat_mac(clk,rst_n,a,b,c_out);
 			c_out<= fadd;
 		end
   end
-    
-
 	
-  dlfloat_mult mul(data_a,data_b,fprod,clk);
+  dlfloat_mult mul(a,b,fprod,clk);
   dlfloat_adder add(clk,fprod,c_out,fadd);
 
 endmodule 
@@ -155,7 +163,7 @@ module dlfloat_mult(a,b,c_mul,clk);
     end 
 endmodule 
 
-module dlfloat_adder(input clk, input [15:0]a1, input [15:0]b1, output reg[15:0]c_add=0);
+module dlfloat_adder(input clk, input [15:0]a1, input [15:0]b1, output logic[15:0]c_add=0);
     
     reg    [15:0] Num_shift_80; 
     reg    [5:0]  Larger_exp_80,Final_expo_80;
@@ -170,7 +178,7 @@ module dlfloat_adder(input clk, input [15:0]a1, input [15:0]b1, output reg[15:0]
   	
    
     
-	always@(*) begin
+  always@(*) begin
         //stage 1
 	     e1_80 = a1[14:9];
 	     e2_80 = b1[14:9];
