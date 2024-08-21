@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Your Name
  * SPDX-License-Identifier: Apache-2.0
  */
-// Code your design here
+
 `default_nettype none
 
 module tt_um_dlfloatmac (
@@ -34,6 +34,7 @@ out_wrapper wrap2(clk,rst_n,c,c_byte);
 
 
 assign uo_out = c_byte[7:0];
+wire _unused = &{ena, 1'b0};
    
 endmodule
 
@@ -53,6 +54,7 @@ reg [15:0] temp_data;
         state <= 2'b00; 
         reg_a <= 16'b0;
         reg_b <= 16'b0;
+        temp_data <= 16'b0;
     end
     else begin
         case (state)
@@ -111,16 +113,16 @@ endmodule
   output reg [15:0]c_out;
   wire [15:0]fprod,fadd;
   
-  always @(posedge clk) begin
+  always @(posedge clk or negedge rst_n ) begin
     if(!rst_n) begin
-      c_out<=0;
+      c_out<=16'b0;
     end
-		begin
-			c_out<= fadd;
-		end
+    else begin
+	c_out<= fadd;
+    end
   end
 	
-	 dlfloat_mult mul(a,b,fprod,clk,rst_n);
+  dlfloat_mult mul(a,b,fprod,clk,rst_n);
   dlfloat_adder add(clk,fprod,c_out,fadd);
 
 endmodule 
@@ -138,7 +140,7 @@ module dlfloat_mult(a,b,c_mul,clk,rst_n);
     reg [16:0] temp;
     reg [15:0] c_mul1;
    
-  always @(posedge clk) begin
+  always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       c_mul<=16'b0;
     end
@@ -175,7 +177,7 @@ endmodule
 module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0] c_add=0);
 
    	
-    reg    [15:0] Num_shift_80; 
+    reg    [5:0] Num_shift_80; 
     reg    [5:0]  Larger_exp_80,Final_expo_80;
     reg    [9:0] Small_exp_mantissa_80,S_mantissa_80,L_mantissa_80,Large_mantissa_80;
     reg    [8:0] Final_mant_80;
@@ -184,7 +186,7 @@ module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0
     reg    [8:0] m1_80,m2_80;
     reg          s1_80,s2_80,Final_sign_80;
     reg    [8:0]  renorm_shift_80;
-    integer signed   renorm_exp_80;
+    reg signed [5:0] renorm_exp_80;
   	
    
     
@@ -266,13 +268,13 @@ module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0
 	 //renormalization for mantissa and exponent
      //stage 4
 	  //to avoid latch inference
-	   renorm_exp_80=4'd0;
+	   renorm_exp_80=6'd0;
 	   renorm_shift_80=9'd0;
 	   Add1_mant_80=Add1_mant_80;
 	  
         if (Add_mant_80[10] ) begin
 		   Add1_mant_80= Add_mant_80 >> 1;
-		   renorm_exp_80 = 4'd1;
+		   renorm_exp_80 = 6'd1;
 	    end
         else begin 
            if (Add_mant_80[9])begin
@@ -280,39 +282,39 @@ module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0
 		     renorm_exp_80 = 0;		
 	       end
            else if (Add_mant_80[8])begin
-		     renorm_shift_80 = 8'd1; 
+		     renorm_shift_80 = 9'd1; 
 		     renorm_exp_80 = -1;
 	        end 
            else if (Add_mant_80[7])begin
-		      renorm_shift_80 = 8'd2; 
+		      renorm_shift_80 = 9'd2; 
 		      renorm_exp_80 = -2;		
 	       end  
            else if (Add_mant_80[6])begin
-		      renorm_shift_80 = 8'd3; 
+		      renorm_shift_80 = 9'd3; 
 		      renorm_exp_80 = -3;		
 	       end
            else if (Add_mant_80[5])begin
-		      renorm_shift_80 = 8'd4; 
+		      renorm_shift_80 = 9'd4; 
 		      renorm_exp_80 = -4;		
 	       end
            else if (Add_mant_80[4])begin
-		      renorm_shift_80 = 8'd5; 
+		      renorm_shift_80 = 9'd5; 
 		      renorm_exp_80 = -5;		
 	       end
            else if (Add_mant_80[3])begin
-		      renorm_shift_80 = 8'd6; 
+		      renorm_shift_80 = 9'd6; 
 		      renorm_exp_80 = -6;		
 	       end
            else if (Add_mant_80[2])begin
-		      renorm_shift_80 = 8'd7; 
+		      renorm_shift_80 = 9'd7; 
 		      renorm_exp_80 = -7;		
 	        end
            else if (Add_mant_80[1])begin
-		      renorm_shift_80 = 8'd8; 
+		      renorm_shift_80 = 9'd8; 
 		      renorm_exp_80 = -8;		
 	        end
            else if (Add_mant_80[0])begin
-		      renorm_shift_80 = 8'd9; 
+		      renorm_shift_80 = 9'd9; 
 		      renorm_exp_80 = -9;		
 	        end
            Add1_mant_80 = Add_mant_80 << renorm_shift_80;
