@@ -39,24 +39,24 @@ wire _unused = &{ena, 1'b0};
 endmodule
 
 module reg_wrapper(
-    input clk,
-    input rst_n,
-    input [15:0] data_in,
+    input wire clk,
+    input wire rst_n,
+    input wire [15:0] data_in,
     output reg [15:0] reg_a,
     output reg [15:0] reg_b
 );
 
-   reg [1:0] state;
-   reg [15:0] temp_data;
+reg [1:0] state;
+reg [15:0] temp_data;
 
- always @(posedge clk or negedge rst_n) begin
-     if (!rst_n) begin
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
         state <= 2'b00; 
         reg_a <= 16'b0;
         reg_b <= 16'b0;
         temp_data <= 16'b0;
-     end
-     else begin
+    end
+    else begin
         case (state)
             2'b00: begin
                 temp_data <= data_in;
@@ -71,21 +71,21 @@ module reg_wrapper(
             end
             default: state <= 2'b00; 
         endcase
-     end
-  end
+    end
+end
 
 endmodule
 
 module out_wrapper(
-    input clk,
-    input rst_n,
-    input [15:0] c,
-    output reg [7:0] c_byte
+    input wire clk,
+    input wire rst_n,
+  input wire [15:0] c,
+  output reg [7:0] c_byte
 );
 
-    reg [1:0] state;
+reg [1:0] state;
 
-   always @(posedge clk or negedge rst_n) begin
+  always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         state <= 2'b00; 
         c_byte <=8'b0;
@@ -107,9 +107,9 @@ end
 
 endmodule
 
-module dlfloat_mac(clk,rst_n,a,b,c_out);
-  input [15:0]a,b;
-  input clk,rst_n;
+ module dlfloat_mac(clk,rst_n,a,b,c_out);
+    input wire [15:0]a,b;
+    input wire clk,rst_n;
   output reg [15:0]c_out;
   wire [15:0]fprod,fadd;
   
@@ -118,19 +118,19 @@ module dlfloat_mac(clk,rst_n,a,b,c_out);
       c_out<=16'b0;
     end
     else begin
-  	c_out<= fadd;
+	c_out<= fadd;
     end
   end
-  	
+	
   dlfloat_mult mul(a,b,fprod,clk,rst_n);
   dlfloat_adder add(clk,fprod,c_out,fadd);
-  
+
 endmodule 
-  
+
 module dlfloat_mult(a,b,c_mul,clk,rst_n);
-  input  [15:0]a,b;
-  input clk,rst_n;
-  output  reg[15:0]c_mul;
+    input wire [15:0]a,b;
+    input wire clk,rst_n;
+    output  reg[15:0]c_mul;
     
     reg [9:0]ma,mb; //1 extra because 1.smthng
     reg [8:0] mant;
@@ -148,8 +148,8 @@ module dlfloat_mult(a,b,c_mul,clk,rst_n);
       c_mul<=c_mul1;
     end
   end	
-  	
-  always@(*) begin
+	
+	always@(*) begin
         ma ={1'b1,a[8:0]};
         mb= {1'b1,b[8:0]};
         sa = a[15];
@@ -165,13 +165,10 @@ module dlfloat_mult(a,b,c_mul,clk,rst_n);
   	s=0;
   	
   	//checking for underflow/overflow
-        if ( (ea + eb) < 31) begin
-          c_mul1=16'd513;//pushing to smallest +ve number on underflow
-        end
-  	else if (  (ea + eb) == 31 ) begin
-  		c_mul1=16'b0;//pushing to zero if exp is all zeros
+    if (  (ea + eb) <= 31 ) begin
+  		c_mul1=16'b0;//pushing to zero on underflow
   	end
-        else if ( (ea + eb) > 94) begin
+    else if ( (ea + eb) > 94) begin
           c_mul1=16'h7DFE;//pushing to largest +ve number on overflow
         end
   	else if ( (ea + eb) == 94 ) begin
@@ -195,9 +192,9 @@ module dlfloat_mult(a,b,c_mul,clk,rst_n);
  	end 
     end 
 endmodule 
- 
-module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0] c_add=0);
-   
+
+module dlfloat_adder(input wire clk,input wire [15:0] a1, input wire [15:0] b1,output reg [15:0] c_add=0);
+
    	
     reg    [5:0] Num_shift_80; 
     reg    [5:0]  Larger_exp_80,Final_expo_80;
@@ -209,61 +206,62 @@ module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0
     reg          s1_80,s2_80,Final_sign_80;
     reg    [8:0]  renorm_shift_80;
     reg signed [5:0] renorm_exp_80;
-   	
+  	
    
     
-    always@(*) begin
+  always@(*) begin
         //stage 1
-     	     e1_80 = a1[14:9];
-    	     e2_80 = b1[14:9];
+	     e1_80 = a1[14:9];
+	     e2_80 = b1[14:9];
              m1_80 = a1[8:0];
-     	     m2_80 = b1[8:0];
+	     m2_80 = b1[8:0];
              s1_80 = a1[15];
-       	     s2_80 = b1[15];
-        
-	    Num_shift_80=16'b0;
+	     s2_80 = b1[15];
+
+	  Num_shift_80=16'b0;
 	  
-           if (e1_80  > e2_80) begin
-              Num_shift_80           = e1_80 - e2_80;
-              Larger_exp_80          = e1_80;                     
-              Small_exp_mantissa_80  = {1'b1,m2_80};
-              Large_mantissa_80      = {1'b1,m1_80};
-           end
+          if (e1_80  > e2_80) begin
+             Num_shift_80           = e1_80 - e2_80;
+             Larger_exp_80          = e1_80;                     
+             Small_exp_mantissa_80  = {1'b1,m2_80};
+             Large_mantissa_80      = {1'b1,m1_80};
+          end
         
-           else begin
-             Num_shift_80           = e2_80 - e1_80;
-             Larger_exp_80          = e2_80;
-             Small_exp_mantissa_80  = {1'b1,m1_80};
-             Large_mantissa_80      = {1'b1,m2_80};
-           end
-        
-	    if (e1_80 == 0 | e2_80 ==0) begin
+          else begin
+            Num_shift_80           = e2_80 - e1_80;
+            Larger_exp_80          = e2_80;
+            Small_exp_mantissa_80  = {1'b1,m1_80};
+            Large_mantissa_80      = {1'b1,m2_80};
+          end
+ 
+	      if (e1_80 == 0 | e2_80 ==0) begin
 	        Num_shift_80 = 0;
-	        Small_exp_mantissa_80 = 10'd512; //to avoid subnormal mantissa to be greater than normal mantissa pushing it to all zeros and leading 1      
-	    end
-	    else begin
+	      end
+	      else begin
 	        Num_shift_80 = Num_shift_80;
-	    end
-            
-            
-           //stage 2 
-           //shift and append smaller mantissa
-	    Small_exp_mantissa_80  = (Small_exp_mantissa_80 >> Num_shift_80);
+	      end
+      
+        
+        //stage 2
+        // append 1 and shift
+	    
+	      Small_exp_mantissa_80  = (Small_exp_mantissa_80 >> Num_shift_80);
+        
               
-           //stage 3
-           //add the mantissas
+       //stage 3
+       //add the mantissas
                                                     
-            if (Small_exp_mantissa_80  < Large_mantissa_80) begin
+        if (Small_exp_mantissa_80  < Large_mantissa_80) begin
 		   S_mantissa_80 = Small_exp_mantissa_80;
-	    	   L_mantissa_80 = Large_mantissa_80;
-            end
-            else begin
+		   L_mantissa_80 = Large_mantissa_80;
+        end
+        else begin
 			
 		   S_mantissa_80 = Large_mantissa_80;
 		   L_mantissa_80 = Small_exp_mantissa_80;
-            end       
+        end       
                        
-            Add_mant_80=11'b0;
+        Add_mant_80=11'b0;
 	
 	    if (e1_80!=0 & e2_80!=0) begin
 		   if (s1_80 == s2_80) begin
@@ -276,69 +274,63 @@ module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0
 		     Add_mant_80 = L_mantissa_80;
 	    end
       
-	   //renormalization for mantissa and exponent
-           //stage 4
-	   //to avoid latch inference
+	 //renormalization for mantissa and exponent
+     //stage 4
+	  //to avoid latch inference
 	   renorm_exp_80=6'd0;
 	   renorm_shift_80=9'd0;
 	   Add1_mant_80=Add1_mant_80;
 	  
-           if (Add_mant_80[10] ) begin
+        if (Add_mant_80[10] ) begin
 		   Add1_mant_80= Add_mant_80 >> 1;
 		   renorm_exp_80 = 6'd1;
-	   end
-           else begin 
-              if (Add_mant_80[9])begin
-	   	     renorm_shift_80 = 0;
-	   	     renorm_exp_80 = 0;		
-	      end
-              else if (Add_mant_80[8])begin
-	   	     renorm_shift_80 = 9'd1; 
-	   	     renorm_exp_80 = -1;
-	      end 
-              else if (Add_mant_80[7])begin
-	      	      renorm_shift_80 = 9'd2; 
-	      	      renorm_exp_80 = -2;		
-	      end  
-              else if (Add_mant_80[6])begin
-	    	      renorm_shift_80 = 9'd3; 
-	    	      renorm_exp_80 = -3;		
-	      end
-              else if (Add_mant_80[5])begin
-	    	      renorm_shift_80 = 9'd4; 
-	   	      renorm_exp_80 = -4;		
-	      end
-              else if (Add_mant_80[4])begin
-	    	      renorm_shift_80 = 9'd5; 
-	    	      renorm_exp_80 = -5;		
-	      end
-              else if (Add_mant_80[3])begin
-	   	      renorm_shift_80 = 9'd6; 
-	   	      renorm_exp_80 = -6;		
-	      end
-              else if (Add_mant_80[2])begin
-	   	      renorm_shift_80 = 9'd7; 
-	   	      renorm_exp_80 = -7;		
+	    end
+        else begin 
+           if (Add_mant_80[9])begin
+		     renorm_shift_80 = 0;
+		     renorm_exp_80 = 0;		
 	       end
-              else if (Add_mant_80[1])begin
-	   	      renorm_shift_80 = 9'd8; 
-	    	      renorm_exp_80 = -8;		
-	      end
-              else if (Add_mant_80[0])begin
-	    	      renorm_shift_80 = 9'd9; 
-	    	      renorm_exp_80 = -9;		
-	      end
-	      else begin
-		      renorm_exp_80=6'd0;
-	              renorm_shift_80=9'd0;
-	              Add1_mant_80=Add1_mant_80;
-	      end
-	  	   
-              Add1_mant_80 = Add_mant_80 << renorm_shift_80;
-            
-          end
-
-          Final_expo_80 = 6'd0;//to avoid latch inference
+           else if (Add_mant_80[8])begin
+		     renorm_shift_80 = 9'd1; 
+		     renorm_exp_80 = -1;
+	        end 
+           else if (Add_mant_80[7])begin
+		      renorm_shift_80 = 9'd2; 
+		      renorm_exp_80 = -2;		
+	       end  
+           else if (Add_mant_80[6])begin
+		      renorm_shift_80 = 9'd3; 
+		      renorm_exp_80 = -3;		
+	       end
+           else if (Add_mant_80[5])begin
+		      renorm_shift_80 = 9'd4; 
+		      renorm_exp_80 = -4;		
+	       end
+           else if (Add_mant_80[4])begin
+		      renorm_shift_80 = 9'd5; 
+		      renorm_exp_80 = -5;		
+	       end
+           else if (Add_mant_80[3])begin
+		      renorm_shift_80 = 9'd6; 
+		      renorm_exp_80 = -6;		
+	       end
+           else if (Add_mant_80[2])begin
+		      renorm_shift_80 = 9'd7; 
+		      renorm_exp_80 = -7;		
+	        end
+           else if (Add_mant_80[1])begin
+		      renorm_shift_80 = 9'd8; 
+		      renorm_exp_80 = -8;		
+	        end
+           else if (Add_mant_80[0])begin
+		      renorm_shift_80 = 9'd9; 
+		      renorm_exp_80 = -9;		
+	        end
+           Add1_mant_80 = Add_mant_80 << renorm_shift_80;
+        
+        end
+     
+           Final_expo_80 = 6'd0;//to avoid latch inference
 	  Final_mant_80 = 9'd0;//to avoid latch inference  
 	  Final_sign_80=0;//to avoid latch inference 
            //checking for overflow/underflow
@@ -392,4 +384,5 @@ module dlfloat_adder(input clk,input [15:0] a1, input [15:0] b1,output reg [15:0
                end 
            end//for overflow/underflow 
   end //for always block 
+    
 endmodule
