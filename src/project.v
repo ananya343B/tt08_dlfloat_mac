@@ -206,7 +206,7 @@ module dlfloat_adder(input wire clk,input wire [15:0] a1, input wire [15:0] b1,o
     reg          s1_80,s2_80,Final_sign_80;
     reg    [8:0]  renorm_shift_80;
     reg signed [5:0] renorm_exp_80;
-  	
+    reg signed [5:0] larger_expo_neg;	
    
     
   always@(*) begin
@@ -333,11 +333,12 @@ module dlfloat_adder(input wire clk,input wire [15:0] a1, input wire [15:0] b1,o
            Final_expo_80 = 6'd0;//to avoid latch inference
 	  Final_mant_80 = 9'd0;//to avoid latch inference  
 	  Final_sign_80=0;//to avoid latch inference 
+	  larger_expo_neg = -Larger_exp_80;
            //checking for overflow/underflow
            if(  Larger_exp_80 == 63 && renorm_exp_80 == 1) begin //overflow
                 c_add=16'h7DFE;//largest +ve value
            end
-           else if ((Larger_exp_80 >= 1) && (Larger_exp_80 <= 8) && (renorm_exp_80 < -Larger_exp_80)) begin //underflow
+           else if ((Larger_exp_80 >= 1) && (Larger_exp_80 <= 8) && (renorm_exp_80 <  larger_expo_neg)) begin //underflow
                c_add=16'd513;//smallest +ve value
             end 
            else begin
