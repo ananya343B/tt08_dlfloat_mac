@@ -13,10 +13,16 @@ You can also include images in this folder and reference them in the markdown. E
 The digital design is a 5 stage pipelined architecture implementation of MAC Operation for 16 bit DLFloat numbers. DLFloat is a 16-bit floating-point format designed for deep learning training and inference, where speed is prioritized over precision.
 
 Details of DLFloats:
+
 Sign bit: 1 bit
+
 Exponent width: 6 bits
+
 Significand precision: 9 bits
+
 Bias exponent: 31
+
+
 
 
  Work Flow Details:
