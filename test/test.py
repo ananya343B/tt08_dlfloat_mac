@@ -56,50 +56,50 @@ async def test_project(dut):
     dut.ui_in.value = 0
     dut.uio_in.value = 62
     
-    #1ST SET OUTPUT VERIF LSB
-    assert dut.uo_out.value == 0
+    #1ST SET OUTPUT VERIF MSB
+    assert dut.uo_out.value == 65
     
     await ClockCycles(dut.clk, 1)  
     # Set the input values b4=2
     dut.ui_in.value = 0
     dut.uio_in.value = 64
     
-    #1ST SET OUTPUT VERIF MSB
-    assert dut.uo_out.value == 65 
+    #1ST SET OUTPUT VERIF LSB
+    assert dut.uo_out.value == 0 
     await ClockCycles(dut.clk, 1)
     ######5TH SET###############
      # Set the input values a4=1
     dut.ui_in.value = 0
     dut.uio_in.value = 62
     
-    #2ND SET OUTPUT VERIF LSB
-    assert dut.uo_out.value == 128
+    #2ND SET OUTPUT VERIF MSB
+    assert dut.uo_out.value == 66
     
     await ClockCycles(dut.clk, 1)  
     # Set the input values b4=2
     dut.ui_in.value = 0
     dut.uio_in.value = 64
     
-    #2ND SET OUTPUT VERIF MSB
-    assert dut.uo_out.value == 66 
+    #2ND SET OUTPUT VERIF LSB
+    assert dut.uo_out.value == 128 
     
     
    #OUTPUT VERIF
     ##########3RD SET#############
     await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 64
-    await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 68
+    await ClockCycles(dut.clk, 1)
+    assert dut.uo_out.value == 64
     ##########4TH SET#############
     await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 192
-    await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 68
+    await ClockCycles(dut.clk, 1)
+    assert dut.uo_out.value == 192
     ##########5TH SET#############
     await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 64
-    await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 69
+    await ClockCycles(dut.clk, 1)
+    assert dut.uo_out.value == 64
 
    
     
