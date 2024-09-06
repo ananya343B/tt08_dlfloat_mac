@@ -24,79 +24,85 @@ async def test_project(dut):
     dut.rst_n.value = 1
 
     dut._log.info("Test project behavior")
-
-    # Set the input values you want to test //a1
+    #######1ST SET###########
+    # Set the input values a1=1
     dut.ui_in.value = 0
     dut.uio_in.value = 62
-
-    # Wait for one clock cycle to see the output values
     await ClockCycles(dut.clk, 1)
-    
-   # Set the input values you want to test //b1
+    # Set the input values b1=3
     dut.ui_in.value = 0
     dut.uio_in.value = 65
-
-    # Wait for one clock cycle to see the output values
     await ClockCycles(dut.clk, 1)
-    
-   # Set the input values you want to test //a2
-    dut.ui_in.value = 0
-    dut.uio_in.value = 64
-   # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
-    
-   # Set the input values you want to test //b2
+    ######2ND SET############
+    # Set the input values a2=1
     dut.ui_in.value = 0
     dut.uio_in.value = 62
     await ClockCycles(dut.clk, 1)
-    
-   # Set the input values you want to test //a3
+    # Set the input values b2=2
+    dut.ui_in.value = 0
+    dut.uio_in.value = 64
+    await ClockCycles(dut.clk, 1)
+    ######3RD SET###############
+     # Set the input values a3=1
+    dut.ui_in.value = 0
+    dut.uio_in.value = 62
+    await ClockCycles(dut.clk, 1)
+    # Set the input values b3=4
     dut.ui_in.value = 0
     dut.uio_in.value = 66
     await ClockCycles(dut.clk, 1)
-    
-   # Set the input values you want to test //b3
+    ######4TH SET###############
+     # Set the input values a4=1
     dut.ui_in.value = 0
     dut.uio_in.value = 62
-
-    await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 65
-   # Set the input values you want to test //a4
-    dut.ui_in.value = 0
-    dut.uio_in.value = 64
-   # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    
+    #1ST SET OUTPUT VERIF LSB
     assert dut.uo_out.value == 0
-   # Set the input values you want to test //b4
+    
+    await ClockCycles(dut.clk, 1)  
+    # Set the input values b4=2
+    dut.ui_in.value = 0
+    dut.uio_in.value = 64
+    
+    #1ST SET OUTPUT VERIF MSB
+    assert dut.uo_out.value == 65 
+    await ClockCycles(dut.clk, 1)
+    ######5TH SET###############
+     # Set the input values a4=1
     dut.ui_in.value = 0
     dut.uio_in.value = 62
-    await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 66
-     # Set the input values you want to test //a5
-    dut.ui_in.value = 0
-    dut.uio_in.value = 66
-   # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    
+    #2ND SET OUTPUT VERIF LSB
     assert dut.uo_out.value == 128
-   # Set the input values you want to test //b5
+    
+    await ClockCycles(dut.clk, 1)  
+    # Set the input values b4=2
     dut.ui_in.value = 0
-    dut.uio_in.value = 62
+    dut.uio_in.value = 64
     
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
+    #2ND SET OUTPUT VERIF MSB
+    assert dut.uo_out.value == 66 
     
-    await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 68
+    
+   #OUTPUT VERIF
+    ##########3RD SET#############
     await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 64
     await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 68
+    ##########4TH SET#############
     await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 192
+    await ClockCycles(dut.clk, 1)
+    assert dut.uo_out.value == 68
+    ##########5TH SET#############
+    await ClockCycles(dut.clk, 1)
+    assert dut.uo_out.value == 64
     await ClockCycles(dut.clk, 1)
     assert dut.uo_out.value == 69
-    await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 192
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values
+   
+    
+
+
+   
