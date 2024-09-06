@@ -93,11 +93,11 @@ module out_wrapper(
     else begin
         case (state)
             2'b00: begin
-		    c_byte <= c[7:0];
+		    c_byte <= c[15:8];
                 state <= 2'b01;
             end
             2'b01: begin
-		    c_byte <= c[15:8]; 
+		    c_byte <= c[7:0]; 
                 state <= 2'b00;
             end
             default: state <= 2'b00; 
