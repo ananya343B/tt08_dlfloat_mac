@@ -8,7 +8,7 @@ You can also include images in this folder and reference them in the markdown. E
 -->
 
 ## Design Description
-![MAC unit block diagram](https://github.com/ananya343B/tt08_dlfloat_mac]/blob/main/docs/MAC unit block diagram.png)
+![MAC unit block diagram](https://github.com/ananya343B/tt08_dlfloat_mac/blob/main/docs/MAC unit block diagram.png)
 
 The digital design is a 5 stage pipelined architecture implementation of MAC Operation for 16 bit DLFloat numbers. DLFloat is a 16-bit floating-point format designed for deep learning training and inference, where speed is prioritized over precision.
 Details of DLFloats:
