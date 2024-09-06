@@ -23,6 +23,12 @@ Significand precision: 9 bits
 Bias exponent: 31
 
 
+| Value                  | Binary format             |
+|------------------------|---------------------------|
+| Max normal             | S. 111110.111111111        |
+| Min normal             | S. 000001.000000000        |
+| Zero                   | S. 000000.000000000        |
+| Infinity-Nan (combined) | S. 111111.111111111        |
 
 
  Work Flow Details:
